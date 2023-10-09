@@ -1,0 +1,206 @@
+#VRML_SIM R2023b utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/floors/protos/RectangleArena.proto"
+
+WorldInfo {
+}
+Viewpoint {
+  orientation -0.20262854442776781 -0.30458614440195225 0.9306819830755495 5.041995330783516
+  position -0.22678056858150542 0.739028150803193 0.4494630251468322
+}
+TexturedBackground {
+}
+RectangleArena {
+  floorSize 5 1
+}
+DEF rm Robot {
+  children [
+    Camera {
+      translation 0.05 0 0.02
+      width 720
+      height 720
+    }
+    DEF yaw HingeJoint {
+      jointParameters HingeJointParameters {
+        axis 0 0 1
+        anchor 0 0 0.12
+      }
+      device [
+        RotationalMotor {
+          name "yaw"
+        }
+      ]
+      endPoint Solid {
+        translation -0.03 0 0.12
+        children [
+          HingeJoint {
+            jointParameters HingeJointParameters {
+              axis 0 2 0
+              anchor 0.004 0 0.1
+            }
+            device [
+              RotationalMotor {
+                name "pitch"
+              }
+            ]
+            endPoint Solid {
+              translation 0.01 0 0.1
+              rotation 0 1 0 0
+              children [
+                CadShape {
+                  url [
+                    "../../../model/rm/rms1_obj/gunble.obj"
+                  ]
+                }
+              ]
+            }
+          }
+          CadShape {
+            url [
+              "../../../model/rm/rms1_obj/u arm.obj"
+            ]
+          }
+        ]
+      }
+    }
+    Pose {
+      translation 0 0 0.09
+      children [
+        CadShape {
+          url [
+            "../../../model/rm/rms1_obj/body.obj"
+          ]
+        }
+      ]
+    }
+    DEF RFwheel HingeJoint {
+      jointParameters HingeJointParameters {
+        axis 0 1 0
+        anchor 0.11 -0.09 0.07
+      }
+      device [
+        RotationalMotor {
+          name "RFwheel"
+        }
+      ]
+      endPoint DEF wheel Solid {
+        translation 0.11 -0.09 0.0700005
+        rotation 1 1.4057613720160548e-11 -1.4057661054525671e-11 1.5707996938995605
+        children [
+          CadShape {
+            url [
+              "../../../model/rm/rms1_obj/wheels_l.obj"
+            ]
+          }
+        ]
+        name "solid(4)"
+        boundingObject Cylinder {
+          height 0.05
+          radius 0.055
+        }
+        physics Physics {
+        }
+      }
+    }
+    DEF RBwheel HingeJoint {
+      jointParameters HingeJointParameters {
+        axis 0 1 0
+        anchor -0.11 -0.09 0.07
+      }
+      device [
+        RotationalMotor {
+          name "RBwheel"
+        }
+      ]
+      endPoint DEF wheel Solid {
+        translation -0.11000000000000008 -0.09 0.0700005
+        rotation 1 -7.34357964402219e-11 7.343604370672783e-11 1.5707996938995616
+        children [
+          CadShape {
+            url [
+              "../../../model/rm/rms1_obj/wheels_l.obj"
+            ]
+          }
+        ]
+        name "solid(3)"
+        boundingObject Cylinder {
+          height 0.05
+          radius 0.055
+        }
+        physics Physics {
+        }
+      }
+    }
+    DEF LBwheel HingeJoint {
+      jointParameters HingeJointParameters {
+        axis 0 1 0
+        anchor -0.11 0.09 0.07
+      }
+      device [
+        RotationalMotor {
+          name "LBwheel"
+        }
+      ]
+      endPoint DEF wheel Solid {
+        translation -0.11000000000000021 0.09 0.0700005
+        rotation 1 -2.036212308593019e-10 2.0362191647029892e-10 1.57079969389956
+        children [
+          CadShape {
+            url [
+              "../../../model/rm/rms1_obj/wheels_l.obj"
+            ]
+          }
+        ]
+        name "solid(2)"
+        boundingObject Cylinder {
+          height 0.05
+          radius 0.055
+        }
+        physics Physics {
+        }
+      }
+    }
+    DEF LFwheel HingeJoint {
+      jointParameters HingeJointParameters {
+        axis 0 1 0
+        anchor 0.11 0.09 0.07
+      }
+      device [
+        RotationalMotor {
+          name "LFwheel"
+        }
+      ]
+      endPoint DEF wheel Solid {
+        translation 0.10999999999999997 0.09 0.0700005
+        rotation 1 -2.1831118324491503e-11 2.1831191831711924e-11 1.5707996938995576
+        children [
+          CadShape {
+            url [
+              "../../../model/rm/rms1_obj/wheels_l.obj"
+            ]
+          }
+        ]
+        name "solid(1)"
+        boundingObject Cylinder {
+          height 0.05
+          radius 0.055
+        }
+        physics Physics {
+        }
+      }
+    }
+  ]
+  name "rm"
+  boundingObject Pose {
+    translation 0 0 0.09
+    children [
+      Box {
+        size 0.32 0.12 0.08
+      }
+    ]
+  }
+  physics Physics {
+  }
+  controller "<extern>"
+}

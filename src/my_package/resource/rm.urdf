@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<robot name="rm">
+    <webots>
+        <device reference="camera" type="Camera">
+            <ros>
+                <topicName>/camera</topicName>
+                <alwaysOn>true</alwaysOn>
+            </ros>
+        </device>
+        <plugin type="my_package.my_robot_driver.MyRobotDriver" />
+    </webots>
+</robot>
