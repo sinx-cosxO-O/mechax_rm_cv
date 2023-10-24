@@ -21,20 +21,50 @@ def generate_launch_description():
          get_package_share_directory('my_package'), 'launch'),
          '/robot_launch.py'])
       )
-    
-    detector_node = Node(
-        package='armor_detector',
-        executable='armor_detector_node',
-        emulate_tty=True,
-        output='both',
-        parameters=[node_params],
-        arguments=['--ros-args', '--log-level',
-                   'armor_detector:='+launch_params['detector_log_level']],
+
+    def get_camera_detector_container(camera_node):
+        return ComposableNodeContainer(
+            name='camera_detector_container',
+            namespace='',
+            package='rclcpp_components',
+            executable='component_container',
+            composable_node_descriptions=[
+                camera_node,
+                ComposableNode(
+                    package='armor_detector',
+                    plugin='rm_auto_aim::ArmorDetectorNode',
+                    name='armor_detector',
+                    parameters=[node_params],
+                    extra_arguments=[{'use_intra_process_comms': True}]
+                )
+            ],
+            output='both',
+            emulate_tty=True,
+            ros_arguments=['--ros-args', '--log-level',
+                           'armor_detector:='+launch_params['detector_log_level']], 
+            on_exit=Shutdown(),
+        )
+
+    cam_detector = get_camera_detector_container(camera_node)
+
+    # detector_node = Node(
+    #     package='armor_detector',
+    #     executable='armor_detector_node',
+    #     emulate_tty=True,
+    #     output='both',
+    #     parameters=[node_params],
+    #     arguments=['--ros-args', '--log-level',
+    #                'armor_detector:='+launch_params['detector_log_level']],
+    # )
+
+    delay_tracker_node = TimerAction(
+        period=2.0,
+        actions=[tracker_node],
     )
 
     return LaunchDescription([
         robot_state_publisher,
-        camera_node,
-        detector_node,
-        tracker_node,
+        cam_detector,
+        # detector_node,
+        delay_tracker_node,
     ])

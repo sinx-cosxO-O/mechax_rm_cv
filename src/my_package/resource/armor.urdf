@@ -1,0 +1,6 @@
+<?xml version="1.0" ?>
+<robot name="armor">
+    <webots>
+        <plugin type="my_package.armor_robot_driver.MyRobotDriver" />
+    </webots>
+</robot>

@@ -61,10 +61,15 @@ def generate_launch_description():
         arguments=['--ros-args', '--log-level',
                    'armor_detector:='+launch_params['detector_log_level']],
     )
+    
+    delay_tracker_node = TimerAction(
+        period=2.0,
+        actions=[tracker_node],
+    )
 
     return LaunchDescription([
         robot_state_publisher,
         cam_detector,
         detector_node,
-        tracker_node,
+        delay_tracker_node,
     ])
