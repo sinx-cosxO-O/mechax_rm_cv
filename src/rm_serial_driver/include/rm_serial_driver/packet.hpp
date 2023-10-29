@@ -12,17 +12,17 @@ namespace rm_serial_driver
 {
 struct ReceivePacket
 {
-  uint8_t header = 0x5A;
-  uint8_t detect_color : 1;  // 0-red 1-blue
-  bool reset_tracker : 1;
-  uint8_t reserved : 6;
-  float roll;
-  float pitch;
-  float yaw;
-  float aim_x;
-  float aim_y;
-  float aim_z;
-  uint16_t checksum = 0;
+  uint8_t header = 0x5A; 
+  uint8_t detect_color : 1;  // 0-red 1-blue 发1
+  bool reset_tracker : 1;    // 发0
+  uint8_t reserved : 6;      // 发6
+  float roll;                // rad 发0
+  float pitch;               // rad       
+  float yaw;                 // rad
+  float aim_x;               // 发0.5
+  float aim_y;               // 发0.5
+  float aim_z;               // 发0.5
+  uint16_t checksum = 0;     // crc16校验位 https://blog.csdn.net/ydyuse/article/details/105395368
 } __attribute__((packed));
 
 struct SendPacket

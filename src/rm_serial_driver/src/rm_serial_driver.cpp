@@ -89,65 +89,128 @@ RMSerialDriver::~RMSerialDriver()
     owned_ctx_->waitForExit();
   }
 }
+  // while (rclcpp::ok()) {
+  //   try {
+  //     // 这一行从串行端口接收一个字节的数据，将其存储在 header 向量中
+  //     serial_driver_->port()->receive(header);
+  //     if (header[0] == 0x5A) {
+  //       // std::cout << "ture" << std::endl;
+  //       data.resize(sizeof(ReceivePacket) - 1);
+  //       serial_driver_->port()->receive(data);
 
+  //       data.insert(data.begin(), header[0]);
+  //       ReceivePacket packet = fromVector(data);
+  //       // 验证数据的CRC校验和
+  //       bool crc_ok =
+  //         crc16::Verify_CRC16_Check_Sum(reinterpret_cast<const uint8_t *>(&packet), sizeof(packet));
+  //       if (crc_ok) {
+  //         if (!initial_set_param_ || packet.detect_color != previous_receive_color_) {
+  //           setParam(rclcpp::Parameter("detect_color", packet.detect_color));
+  //           previous_receive_color_ = packet.detect_color;
+  //         }
+
+  //         if (packet.reset_tracker) {
+  //           resetTracker();
+  //         }
+  //         // 创建一个名为 t 的 TransformStamped 消息，设置时间戳和坐标变换信息，然后发布坐标变换消息
+  //         geometry_msgs::msg::TransformStamped t;
+  //         timestamp_offset_ = this->get_parameter("timestamp_offset").as_double();
+  //         t.header.stamp = this->now() + rclcpp::Duration::from_seconds(timestamp_offset_);
+  //         t.header.frame_id = "odom";
+  //         t.child_frame_id = "gimbal_link";
+  //         tf2::Quaternion q;
+  //         q.setRPY(packet.roll, packet.pitch, packet.yaw);
+  //         t.transform.rotation = tf2::toMsg(q);
+  //         tf_broadcaster_->sendTransform(t);
+
+  //         if (abs(packet.aim_x) > 0.01) {
+  //           aiming_point_.header.stamp = this->now();
+  //           aiming_point_.pose.position.x = packet.aim_x;
+  //           aiming_point_.pose.position.y = packet.aim_y;
+  //           aiming_point_.pose.position.z = packet.aim_z;
+  //           marker_pub_->publish(aiming_point_);
+  //         }
+  //       } else {
+  //         RCLCPP_ERROR(get_logger(), "CRC error!");
+  //       }
+  //     } else {
+  //       RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 20, "Invalid header: %02X", header[0]);
+  //     }
+  //   } catch (const std::exception & ex) {
+  //     RCLCPP_ERROR_THROTTLE(
+  //       get_logger(), *get_clock(), 20, "Error while receiving data: %s", ex.what());
+  //     reopenPort();
+  //   }
+  // }
 void RMSerialDriver::receiveData()
 {
   std::vector<uint8_t> header(1);
   std::vector<uint8_t> data;
   data.reserve(sizeof(ReceivePacket));
+  bool receiving_data = false;  // 用于跟踪是否正在接收数据
+  std::vector<uint8_t> data_buffer;  // 用于存储接收的数据
 
   while (rclcpp::ok()) {
-    try {
-      serial_driver_->port()->receive(header);
+      try {
+          // 这一行从串行端口接收一个字节的数据，将其存储在 header 向量中
+          serial_driver_->port()->receive(header);
+          
+          if (receiving_data) {
+              // 如果正在接收数据，将数据添加到缓冲区
+              data_buffer.push_back(header[0]);
+              if (header[0] == 0xAA) {
+                  // 如果检测到结束标识符（0xAAA），则停止接收数据并处理
+                  receiving_data = false;
 
-      if (header[0] == 0x5A) {
-        data.resize(sizeof(ReceivePacket) - 1);
-        serial_driver_->port()->receive(data);
+                  // 处理接收到的数据
+                  if (data_buffer.size() == sizeof(ReceivePacket) - 1) {
+                      ReceivePacket packet = fromVector(data_buffer);
 
-        data.insert(data.begin(), header[0]);
-        ReceivePacket packet = fromVector(data);
+                      // 执行您的操作，例如设置参数、发布消息等
+                      if (!initial_set_param_ || packet.detect_color != previous_receive_color_) {
+                          setParam(rclcpp::Parameter("detect_color", packet.detect_color));
+                          previous_receive_color_ = packet.detect_color;
+                      }
 
-        bool crc_ok =
-          crc16::Verify_CRC16_Check_Sum(reinterpret_cast<const uint8_t *>(&packet), sizeof(packet));
-        if (crc_ok) {
-          if (!initial_set_param_ || packet.detect_color != previous_receive_color_) {
-            setParam(rclcpp::Parameter("detect_color", packet.detect_color));
-            previous_receive_color_ = packet.detect_color;
+                      if (packet.reset_tracker) {
+                          resetTracker();
+                      }
+
+                      // 创建坐标变换消息和发布
+                      geometry_msgs::msg::TransformStamped t;
+                      timestamp_offset_ = this->get_parameter("timestamp_offset").as_double();
+                      t.header.stamp = this->now() + rclcpp::Duration::from_seconds(timestamp_offset_);
+                      t.header.frame_id = "odom";
+                      t.child_frame_id = "gimbal_link";
+                      tf2::Quaternion q;
+                      q.setRPY(packet.roll, packet.pitch, packet.yaw);
+                      t.transform.rotation = tf2::toMsg(q);
+                      tf_broadcaster_->sendTransform(t);
+
+                      if (abs(packet.aim_x) > 0.01) {
+                          aiming_point_.header.stamp = this->now();
+                          aiming_point_.pose.position.x = packet.aim_x;
+                          aiming_point_.pose.position.y = packet.aim_y;
+                          aiming_point_.pose.position.z = packet.aim_z;
+                          marker_pub_->publish(aiming_point_);
+                      }
+                  }
+
+                  // 清空数据缓冲区
+                  data_buffer.clear();
+              }
+          } else if (header[0] == 0x5A) {
+              // 如果检测到开始标识符（0x5A），开始接收数据
+              receiving_data = true;
+              data_buffer.push_back(header[0]);
           }
-
-          if (packet.reset_tracker) {
-            resetTracker();
-          }
-
-          geometry_msgs::msg::TransformStamped t;
-          timestamp_offset_ = this->get_parameter("timestamp_offset").as_double();
-          t.header.stamp = this->now() + rclcpp::Duration::from_seconds(timestamp_offset_);
-          t.header.frame_id = "odom";
-          t.child_frame_id = "gimbal_link";
-          tf2::Quaternion q;
-          q.setRPY(packet.roll, packet.pitch, packet.yaw);
-          t.transform.rotation = tf2::toMsg(q);
-          tf_broadcaster_->sendTransform(t);
-
-          if (abs(packet.aim_x) > 0.01) {
-            aiming_point_.header.stamp = this->now();
-            aiming_point_.pose.position.x = packet.aim_x;
-            aiming_point_.pose.position.y = packet.aim_y;
-            aiming_point_.pose.position.z = packet.aim_z;
-            marker_pub_->publish(aiming_point_);
-          }
-        } else {
-          RCLCPP_ERROR(get_logger(), "CRC error!");
-        }
-      } else {
-        RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 20, "Invalid header: %02X", header[0]);
+      } catch (const std::exception & ex) {
+          RCLCPP_ERROR_THROTTLE(
+              get_logger(), *get_clock(), 20, "Error while receiving data: %s", ex.what());
+          reopenPort();
       }
-    } catch (const std::exception & ex) {
-      RCLCPP_ERROR_THROTTLE(
-        get_logger(), *get_clock(), 20, "Error while receiving data: %s", ex.what());
-      reopenPort();
-    }
   }
+
 }
 
 void RMSerialDriver::sendData(const auto_aim_interfaces::msg::Target::SharedPtr msg)

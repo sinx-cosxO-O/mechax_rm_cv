@@ -1,6 +1,6 @@
 /rm_serial_driver:
   ros__parameters:
-    device_name: /dev/ttyACM0
+    device_name: /dev/ttyUSB0
     baud_rate: 115200
     flow_control: none
     parity: none

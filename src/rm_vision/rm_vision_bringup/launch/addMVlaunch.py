@@ -62,6 +62,11 @@ def generate_launch_description():
                    'armor_detector:='+launch_params['detector_log_level']],
     )
     
+    delay_serial_node = TimerAction(
+        period=1.5,
+        actions=[serial_driver_node],
+    )
+    
     delay_tracker_node = TimerAction(
         period=2.0,
         actions=[tracker_node],
