@@ -166,7 +166,6 @@ void RMSerialDriver::receiveData()
                   if (data_buffer.size() == sizeof(ReceivePacket) - 1) {
                       ReceivePacket packet = fromVector(data_buffer);
 
-                      // 执行您的操作，例如设置参数、发布消息等
                       if (!initial_set_param_ || packet.detect_color != previous_receive_color_) {
                           setParam(rclcpp::Parameter("detect_color", packet.detect_color));
                           previous_receive_color_ = packet.detect_color;

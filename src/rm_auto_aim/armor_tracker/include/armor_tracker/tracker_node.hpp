@@ -34,6 +34,13 @@ public:
   explicit ArmorTrackerNode(const rclcpp::NodeOptions & options);
 
 private:
+  struct tar_pos
+  {
+      float x;           //装甲板在世界坐标系下的x
+      float y;           //装甲板在世界坐标系下的y
+      float z;           //装甲板在世界坐标系下的z
+      float yaw;         //装甲板坐标系相对于世界坐标系的yaw角
+  };
   void armorsCallback(const auto_aim_interfaces::msg::Armors::SharedPtr armors_ptr);
 
   void publishMarkers(const auto_aim_interfaces::msg::Target & target_msg);
