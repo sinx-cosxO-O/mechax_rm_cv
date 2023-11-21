@@ -254,25 +254,28 @@ void ArmorTrackerNode::armorsCallback(const auto_aim_interfaces::msg::Armors::Sh
       半径信息：
       target_state(8): 目标的半径
       */
-     struct tar_pos tar_position[4];
-     int idx = 0;
-     float dz = 0.1;
-     float radius_2_temp = tracker_->another_r;
-     int use_1 = 1;
-     float timeDelay = 2.1;
-     float tar_yaw += state(7) * timeDelay;
-     for (int i = 0; i<4; i++) {
-          float tmp_yaw = tar_yaw + i * M_PI/2.0;
-          float r = use_1 ? state(8) : radius_2_temp;
-          tar_position[i].x = state(0) - r*cos(tmp_yaw);
-          tar_position[i].y = state(2) - r*sin(tmp_yaw);
-          tar_position[i].z = use_1 ? state(4) : state(4) + dz;  // dz:另一对装甲板的相对于被跟踪装甲板的高度差
-          tar_position[i].yaw = tmp_yaw;
-          // use_1 = !use_1;
-      }
+    //  struct tar_pos tar_position[4];
+    //  int idx = 0;
+    //  float dz = 0.1;
+    //  float radius_2_temp = tracker_->another_r;
+    //  int use_1 = 1;
+    //  float timeDelay = 2.1;
+    //  float get_yaw = state(6) + state(7) * timeDelay;
+    //  // float get_yaw = state(6);
+    //  for (int i = 0; i<4; i++) {
+    //       float tmp_yaw = get_yaw + i * M_PI/2.0;
+    //       float r = use_1 ? state(8) : radius_2_temp;
+    //       tar_position[i].x = state(0) - r*cos(tmp_yaw);
+    //       tar_position[i].y = state(2) - r*sin(tmp_yaw);
+    //       tar_position[i].z = use_1 ? state(4) : state(4) + dz;  // dz:另一对装甲板的相对于被跟踪装甲板的高度差
+    //       tar_position[i].yaw = tmp_yaw;
+    //       // use_1 = !use_1;
+    //   }
 
-      float tar_pitch = (float)(atan2(tar_position[idx].z, tar_position[idx].x));
-      float tar_yaw = (float)(atan2(tar_position[idx].y, tar_position[idx].x));
+      // float tar_pitch = (float)(atan2(tar_position[idx].z, tar_position[idx].x));
+      // float tar_yaw = (float)(atan2(tar_position[idx].y, tar_position[idx].x));
+      // float tar_yaw = (float)(atan2(state(2), state(0)));
+
       target_msg.id = tracker_->tracked_id;
       target_msg.armors_num = static_cast<int>(tracker_->tracked_armors_num);
       target_msg.position.x = state(0);
@@ -281,13 +284,12 @@ void ArmorTrackerNode::armorsCallback(const auto_aim_interfaces::msg::Armors::Sh
       target_msg.velocity.y = state(3);
       target_msg.position.z = state(4);
       target_msg.velocity.z = state(5);
-      // target_msg.yaw = state(6);
-      // target_msg.v_yaw = state(7);
-      target_msg.yaw = tar_pitch*180/3.1415926;
-      target_msg.v_yaw = tar_yaw*180/3.1415926;
+      target_msg.yaw = state(6);
+      target_msg.v_yaw = state(7);
       target_msg.radius_1 = state(8);
       target_msg.radius_2 = tracker_->another_r;
       target_msg.dz = tracker_->dz;
+      // target_msg.dz = state(6)*180/3.1415826;
     }
   }
 
